@@ -1,0 +1,12 @@
+﻿<s:SurfaceWindow x:Class="MRITable_Intel.SurfaceWindow1"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:s="http://schemas.microsoft.com/surface/2008"
+    Title="MRITable_Intel"
+    xmlns:Controls="clr-namespace:MRITable_Intel"
+    Loaded="SurfaceWindow_Loaded" Closed="SurfaceWindow_Closed" >
+    <Grid>
+        <Controls:ImageHighlighter x:Name="ImageHighlighter"/>
+        <Label Content="" Height="28" HorizontalAlignment="Left" Margin="12,12,0,0" Name="label1" VerticalAlignment="Top" Foreground="#FFEB3636" />
+    </Grid>
+</s:SurfaceWindow>
