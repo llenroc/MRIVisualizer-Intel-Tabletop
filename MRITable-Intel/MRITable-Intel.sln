@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MRITable-Intel", "MRITable-Intel\MRITable-Intel.csproj", "{18D493AC-D1A4-42D9-8930-255B9B6891BB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntelDepth", "..\IntelDepth\IntelDepth\IntelDepth\IntelDepth.csproj", "{D9C78EE9-AA4B-44C3-9A82-90D8313C9812}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntelDepth", "IntelDepth\IntelDepth\IntelDepth.csproj", "{D9C78EE9-AA4B-44C3-9A82-90D8313C9812}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

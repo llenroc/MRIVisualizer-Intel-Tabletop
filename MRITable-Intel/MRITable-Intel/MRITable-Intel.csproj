@@ -189,12 +189,6 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\IntelDepth\IntelDepth\IntelDepth\IntelDepth.csproj">
-      <Project>{D9C78EE9-AA4B-44C3-9A82-90D8313C9812}</Project>
-      <Name>IntelDepth</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
