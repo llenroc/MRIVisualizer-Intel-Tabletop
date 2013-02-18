@@ -34,10 +34,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="libpxcclr">
-      <HintPath>C:\Program Files (x86)\Intel\PCSDK\bin\win32\libpxcclr.dll</HintPath>
+      <HintPath>..\References\libpxcclr.dll</HintPath>
     </Reference>
     <Reference Include="MathNet.Numerics, Version=2.4.0.26, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\References\MathNet.Numerics.dll</HintPath>
+      <Private>False</Private>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
