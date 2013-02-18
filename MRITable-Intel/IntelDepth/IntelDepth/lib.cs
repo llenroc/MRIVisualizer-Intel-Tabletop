@@ -123,8 +123,8 @@ namespace IntelDepth
 
                                 short minimumValue = (short)(screenLength + distanceFromScreenEdge);
                                 //short minimmValue = 33000; 
-                                int minx = 0;
-                                int miny = 0;
+                                //int minx = 0;
+                                //int miny = 0;
                                 float zRatio = 0;
                                 float discardedX = 0;
                                 float discardedY = 0;
