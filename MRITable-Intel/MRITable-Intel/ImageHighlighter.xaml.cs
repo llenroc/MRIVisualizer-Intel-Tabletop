@@ -26,7 +26,8 @@ namespace MRITable_Intel
         const int NUM_OF_SLICES = 100;
 
         List<Rectangle> rectangles;
-        Network network; 
+        Network network;
+        bool scanningPaused = false;
 
         private void Depth_DepthValueDetected(object sender, DepthEventArgs e)
         {
@@ -34,19 +35,22 @@ namespace MRITable_Intel
                 new Action(
                     delegate()
                     {
-                        int slice = ComputeSlice(e.Depth);
+                        if (!scanningPaused)
+                        {
+                            int slice = ComputeSlice(e.Depth);
 
-                        //Update UI of reference body
-                        ShowSlice(slice);
-                        Console.WriteLine(String.Format("{0} mm, {1} slice", e.Depth, slice));
+                            //Update UI of reference body
+                            ShowSlice(slice);
+                            Console.WriteLine(String.Format("{0} mm, {1} slice", e.Depth, slice));
 
-                        //Dispatch slice to attached devices
-                        network.DispatchSlice(slice); 
+                            //Dispatch slice to attached devices
+                            network.DispatchSlice(slice); 
+
+                        }
                     }
                 )
             );
         }
-
 
         public ImageHighlighter()
         {
@@ -77,7 +81,6 @@ namespace MRITable_Intel
             return chosenSlice;
         }
 
-
         #region Setup & Utility Methods
         public void SetupImageHighlighter(IntelCameraPipeline camera)
         {
@@ -87,7 +90,25 @@ namespace MRITable_Intel
             //Setup networking
             network = new Network();
             network.StartServer();
+
+            network.OnContinueScanningEventRecieved += network_OnContinueScanningEventRecieved;
+            network.OnPauseScanningEventRecieved += network_OnPauseScanningEventRecieved;
         }
+
+        #region Scanning Paused Events
+
+        void network_OnPauseScanningEventRecieved(object sender, EventArgs e)
+        {
+            scanningPaused = true;
+        }
+
+        void network_OnContinueScanningEventRecieved(object sender, EventArgs e)
+        {
+            scanningPaused = false;
+        }
+
+        #endregion
+
         private void SetupCamera(IntelCameraPipeline camera)
         {
             camera.OnDepthDetected += Depth_DepthValueDetected;
@@ -112,7 +133,6 @@ namespace MRITable_Intel
                 innerGrid.Children.Add(r);
             }
         }
-
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
