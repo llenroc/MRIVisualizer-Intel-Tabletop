@@ -17,6 +17,8 @@ using Microsoft.Surface.Presentation.Controls;
 using Microsoft.Surface.Presentation.Input;
 
 using IntelDepth;
+
+
 using System.ComponentModel;
 
 using GroupLab.iNetwork;
@@ -34,48 +36,76 @@ namespace MRITable_Intel
     {
         const double SIZE_OF_TABLE = 500.0;
         const int NUM_OF_SLICES = 100;
-        IntelCameraPipeline pub;
 
-        BackgroundWorker bw = new BackgroundWorker(); 
+        IntelCameraPipeline intelCamera;
 
-        /// <summary>
-        /// Default constructor.
-        /// </summary>
-        public SurfaceWindow1()
+        private void SurfaceWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            InitializeComponent();
+            //Setup networking server
+            InitializeServer();
 
-            // Add handlers for window availability events
-            AddWindowAvailabilityHandlers();
+            //Setup grid for displaying slices 
+            this.ImageHighlighter.SetupGrid(NUM_OF_SLICES);
 
-            bw.DoWork += new DoWorkEventHandler(bw_DoWork);
+            //Setup Camera
+            intelCamera = new IntelCameraPipeline();
 
+            //Setup gesture related events
+            SetupCameraForGestures(intelCamera);
+
+            //Setup depth related events
+            intelCamera.OnDepthDetected += Depth_DepthValueDetected;
+            
+            intelCamera.Start();
         }
 
-        public void ShowSlice(int slicenumber)
+        private void SurfaceWindow_Closed(object sender, EventArgs e)
+        {
+            intelCamera.Stop();
+        }
+
+        private void Depth_DepthValueDetected(object sender, DepthEventArgs e)
+        {
+            this.Dispatcher.Invoke(
+                new Action(
+                    delegate()
+                    {
+                        int slice = ComputeSlice(e.Depth);
+
+                        //Update UI of reference body
+                        this.ImageHighlighter.showSlice(slice);
+                        this.label1.Content = String.Format("{0} mm, {1} slice", e.Depth, slice);
+
+                        //Dispatch slice to attached devices
+                        DispatchSlice(slice);
+                    }
+                )
+            );
+        }
+
+        #region Slice Methods
+
+        private void ShowSlice(int slicenumber)
         {
             this.ImageHighlighter.showSlice(slicenumber);
         }
-
-
-        /// <summary>
-        ///  To compute the slice number which corresponds to the distance provided we must consider (a) the size of the table and (b) the number of slices 
-        ///  which we have to display. The calculation is to determine what percentage of distance we are into the table (distance/SIZE_OF_TABLE). Then we multiply this 
-        ///  by the number of slices %INTO * NUM_OF_SLICES. 
-        /// </summary>
-        /// <example>
-        /// If the sensor reports a distance of 200 mm and the table is 890 mm then we are 0.224719... through the table. If we have 100 slices then we want to display slice 22.
-        /// </example>
-        /// <param name="distance"> The distance provided by the sensor in mm. Assumes the distance is from the Bezel. </param>
-        /// <returns></returns>
-        public int ComputeSlice(double distance)
+        private int ComputeSlice(double distance)
         {
             double percentageIntoTable = (distance / SIZE_OF_TABLE);
             int chosenSlice = (int)(percentageIntoTable * NUM_OF_SLICES);
 
-            return chosenSlice; 
+            return chosenSlice;
         }
+        private void DispatchSlice(int sliceNumber)
+        {
+            Message msg = new Message("ShowSlice");
+            msg.AddField("sliceNumber", sliceNumber);
+            this._server.BroadcastMessage(msg);
 
+        }
+        #endregion
+
+        //TODO This iNetwork stuff should be refactored into a seperate class
         #region iNetwork stuff
 
         private Server _server;
@@ -169,8 +199,46 @@ namespace MRITable_Intel
 
         #endregion
 
+
+        #region Gesture Setup & Callback Methods
+        private void SetupCameraForGestures(IntelCameraPipeline camera)
+        {
+            camera.OnFlatHandGestureDetected += Gesture_FlatHandGestureDetected;
+            camera.OnThumbsDownGestureDetected += Gesture_OnThumbsDownGestureDetected;
+            camera.OnThumbsUpGestureDetected += Gesture_OnThumbsUpGestureDetected;
+            camera.OnPeaceSymbolGestureDetected += Gesture_OnPeaceSymbolGestureDetected;
+        }
+
+        private void Gesture_OnPeaceSymbolGestureDetected(object sender, GestureEventArgs e)
+        {
+            Console.WriteLine("Peace Symbol Gesture Detected");
+        }
+
+        private void Gesture_OnThumbsDownGestureDetected(object sender, GestureEventArgs e)
+        {
+            Console.WriteLine("Thumbs Down Gesture Detected");
+        }
+
+        private void Gesture_OnThumbsUpGestureDetected(object sender, GestureEventArgs e)
+        {
+            Console.WriteLine("Thumbs Up Gesture Detected");
+        }
+
+        private void Gesture_FlatHandGestureDetected(object sender, GestureEventArgs e)
+        {
+            Console.WriteLine("Flat Hand Gesture Detected");
+
+        }
+
+        #endregion
+
         #region Generated code
 
+        public SurfaceWindow1()
+        {
+            InitializeComponent();
+            AddWindowAvailabilityHandlers();
+        }
         /// <summary>
         /// Occurs when the window is about to close. 
         /// </summary>
@@ -240,80 +308,8 @@ namespace MRITable_Intel
         #endregion
 
 
-        /// <summary>
-        /// This method is responsible for sending the updated slice method to attached devices using iNetworking of all things. 
-        /// </summary>
-        /// <param name="sliceNumber">
-        /// The slice number corresponding to the slice being displayed. 
-        /// </param>
-        private void DispatchSlice(int sliceNumber)
-        {
-            Message msg = new Message("ShowSlice");
-            msg.AddField("sliceNumber", sliceNumber);
-            this._server.BroadcastMessage(msg);
-
-        }
-
-        private void SurfaceWindow_Loaded(object sender, RoutedEventArgs e)
-        {
-            //Setup networking server
-            InitializeServer();
-
-            //Setup grid for displaying slices 
-            this.ImageHighlighter.SetupGrid(NUM_OF_SLICES);
-
-            //Setup depth camera 
-            pub = new IntelCameraPipeline();
-            pub.getDepth += pub_getDepth;
-            //pub.getHandsEvent += new EventHandler<HandEventArgs>(pub_getHandsEvent);
-
-            //Start depth camera
-            bw.RunWorkerAsync();
-
-        }
-
-        void pub_getHandsEvent(object sender, HandEventArgs e)
-        {
-            Console.WriteLine("LEFT HAND ({0},{1})", e.Hands.LeftHand.positionImage.x, e.Hands.LeftHand.positionImage.y);
-            Console.WriteLine("RIGHT HAND ({0},{1})", e.Hands.RightHand.positionImage.x, e.Hands.RightHand.positionImage.y);
-        }
-        void pub_getDepth(object sender, DepthEventArgs e)
-        {
-            this.Dispatcher.Invoke(
-                new Action(
-                    delegate() {
-
-                        int slice = ComputeSlice(e.Depth); //TODO Why doesn't the library just return it as a double?
-
-                        //Update UI of reference body
-                        this.ImageHighlighter.showSlice(slice);
-                        this.label1.Content = String.Format("{0} mm, {1} slice", e.Depth, slice);
-
-                        //Dispatch slice to attached devices
-                        DispatchSlice(slice);
 
 
-                    }
-                )
-            );
-                
 
-        }
-
-        public delegate void DelegateUpdateDepth(float depth);
-        public void UpdateDepth(float depth)
-        {
-            this.ImageHighlighter.showSlice((int)depth);
-        }
-
-        private void SurfaceWindow_Closed(object sender, EventArgs e)
-        {
-            pub.Stop();
-        }
-
-        private void bw_DoWork(object sender, DoWorkEventArgs e)
-        {
-            pub.Start();
-        }
     }
 }

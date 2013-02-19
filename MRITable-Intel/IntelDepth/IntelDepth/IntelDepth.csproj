@@ -60,7 +60,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CustomEvents.cs" />
+    <Compile Include="CustomEventArgs.cs" />
     <Compile Include="HandInformation.cs" />
     <Compile Include="lib.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

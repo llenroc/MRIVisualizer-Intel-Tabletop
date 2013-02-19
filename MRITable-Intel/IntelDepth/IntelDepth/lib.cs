@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MathNet.Numerics.Statistics;
+using System.ComponentModel;
 
 
 namespace IntelDepth
@@ -10,23 +11,32 @@ namespace IntelDepth
     //Subclassing UtilMPipeline for IntelDepth
     public class IntelCameraPipeline : UtilMPipeline
     {
-        public event EventHandler<DepthEventArgs> getDepth;
+        public event EventHandler<DepthEventArgs> OnDepthDetected;
         public event EventHandler<SpeechEventArgs> getSpeechEvent;
-        public event EventHandler<GestureEventArgs> getGestureEvent;
-        public event EventHandler<HandEventArgs> getHandsEvent;
+
+        public event EventHandler<GestureEventArgs> OnFlatHandGestureDetected;
+        public event EventHandler<GestureEventArgs> OnPeaceSymbolGestureDetected;
+        public event EventHandler<GestureEventArgs> OnThumbsDownGestureDetected;
+        public event EventHandler<GestureEventArgs> OnThumbsUpGestureDetected; 
 
         const int ErrorCode = -1;
         const short screenLength = 500;
         public int numFramesToAverage = 5;
         private short distanceFromScreenEdge = 200; // ~20 cm from the edge
 
-        public IntelCameraPipeline()
-            : base() { }
+        public IntelCameraPipeline(): base() { }
 
-        /// <summary>
-        /// Function to start the Camera and throw event when depth is detected
-        /// </summary>
+        private BackgroundWorker bw; 
+
+
         public void Start()
+        {
+            bw = new BackgroundWorker();
+            bw.DoWork += new DoWorkEventHandler(Start_OnBackgroundThread);
+            bw.RunWorkerAsync();
+        }
+
+        private void Start_OnBackgroundThread(object sender, DoWorkEventArgs e)
         {
             //Depth Camera Enabling
             base.EnableImage(PXCMImage.ColorFormat.COLOR_FORMAT_DEPTH);
@@ -35,16 +45,15 @@ namespace IntelDepth
             //base.EnableVoiceRecognition();
 
             ////Gesture Recognition Enabling
-            //base.EnableGesture();
+            base.EnableGesture();
 
             base.Init();
             if (AcquireFrame(true))
                 doEvent(new DepthEventArgs(0));
+            
         }
 
-        /// <summary>
-        /// Function to stop the Camera
-        /// </summary>
+
         public void Stop()
         {
             base.Close();
@@ -71,14 +80,45 @@ namespace IntelDepth
         }
 
         /// <summary>
-        /// Function that returns what gesture was performed
+        /// This method is triggered by the Intel Library, it supplies a struct describing the gesture
+        /// which is processed into the specific gesture events. 
+        /// Supported gestures Flat Hand, Peace Symbol, Thumbs Down, Thumbs Up
         /// </summary>
         /// <param name="gesture"></param>
-        //public override void OnGesture(ref PXCMGesture.Gesture gesture)
-        //{
-        //    //if (gesture.active)
-        //    //    getGestureEvent(this, new GestureEventArgs(gesture));  
-        //}
+        public override void OnGesture(ref PXCMGesture.Gesture gesture)
+        {
+            if (gesture.active)
+            {
+                switch (gesture.label)
+                {
+                    //Flat Hand
+                    case PXCMGesture.Gesture.Label.LABEL_POSE_BIG5:
+                        if (OnFlatHandGestureDetected != null)
+                            OnFlatHandGestureDetected(this, new GestureEventArgs(gesture));
+                        break;
+                    //Peace Symbol 
+                    case PXCMGesture.Gesture.Label.LABEL_POSE_PEACE:
+                        if (OnPeaceSymbolGestureDetected != null)
+                            OnPeaceSymbolGestureDetected(this, new GestureEventArgs(gesture));
+                        break;
+                    //Thumbs Down
+                    case PXCMGesture.Gesture.Label.LABEL_POSE_THUMB_DOWN:
+                        if (OnThumbsDownGestureDetected != null)
+                            OnThumbsDownGestureDetected(this, new GestureEventArgs(gesture));
+                        break;
+                    //Thumbs Up
+                    case PXCMGesture.Gesture.Label.LABEL_POSE_THUMB_UP:
+                        if (OnThumbsUpGestureDetected != null)
+                            OnThumbsUpGestureDetected(this, new GestureEventArgs(gesture));
+                        break; 
+                    default:
+                        break;
+                }
+
+
+            }
+                
+        }
 
         /// <summary>
         /// Event for returning Depth
@@ -88,7 +128,7 @@ namespace IntelDepth
         {
             Console.Write("doEvent called");
             //copy event to avoid race condition
-            EventHandler<DepthEventArgs> handler = getDepth;
+            EventHandler<DepthEventArgs> handler = OnDepthDetected;
 
 
             if (handler == null) Console.Write("no subscriber");
@@ -194,34 +234,34 @@ namespace IntelDepth
             }
         }
 
-        /// <summary>
-        /// Function for returning what the positions of the left and right hand are
-        /// </summary>
-        /// <returns></returns>
-        public void NewGestureFrame()
-        {
-            HandInformation returnedHandInformation = new HandInformation();
+        // <summary>
+        // Function for returning what the positions of the left and right hand are
+        // </summary>
+        // <returns></returns>
+        //public void NewGestureFrame()
+        //{
+        //    HandInformation returnedHandInformation = new HandInformation();
 
-            PXCMGesture gesture = QueryGesture();
+        //    PXCMGesture gesture = QueryGesture();
 
-            PXCMGesture.GeoNode leftNodeData;
-            pxcmStatus leftNodeStatus;
+        //    PXCMGesture.GeoNode leftNodeData;
+        //    pxcmStatus leftNodeStatus;
 
-            PXCMGesture.GeoNode rightNodeData;
-            pxcmStatus rightNodeStatus;
+        //    PXCMGesture.GeoNode rightNodeData;
+        //    pxcmStatus rightNodeStatus;
 
-            leftNodeStatus = gesture.QueryNodeData(0, PXCMGesture.GeoNode.Label.LABEL_BODY_HAND_LEFT, out leftNodeData);
-            rightNodeStatus = gesture.QueryNodeData(0, PXCMGesture.GeoNode.Label.LABEL_BODY_HAND_RIGHT, out rightNodeData);
+        //    leftNodeStatus = gesture.QueryNodeData(0, PXCMGesture.GeoNode.Label.LABEL_BODY_HAND_LEFT, out leftNodeData);
+        //    rightNodeStatus = gesture.QueryNodeData(0, PXCMGesture.GeoNode.Label.LABEL_BODY_HAND_RIGHT, out rightNodeData);
 
-            if (leftNodeStatus >= pxcmStatus.PXCM_STATUS_NO_ERROR)
-                returnedHandInformation.LeftHand = leftNodeData;
-            if (rightNodeStatus >= pxcmStatus.PXCM_STATUS_NO_ERROR)
-                returnedHandInformation.RightHand = rightNodeData;
+        //    if (leftNodeStatus >= pxcmStatus.PXCM_STATUS_NO_ERROR)
+        //        returnedHandInformation.LeftHand = leftNodeData;
+        //    if (rightNodeStatus >= pxcmStatus.PXCM_STATUS_NO_ERROR)
+        //        returnedHandInformation.RightHand = rightNodeData;
 
-            if (leftNodeStatus >= pxcmStatus.PXCM_STATUS_NO_ERROR || rightNodeStatus >= pxcmStatus.PXCM_STATUS_NO_ERROR)
-                getHandsEvent(this, new HandEventArgs(returnedHandInformation));
+        //    if (leftNodeStatus >= pxcmStatus.PXCM_STATUS_NO_ERROR || rightNodeStatus >= pxcmStatus.PXCM_STATUS_NO_ERROR)
+        //        getHandsEvent(this, new HandEventArgs(returnedHandInformation));
 
-        }
+        //}
         
     }
 }
