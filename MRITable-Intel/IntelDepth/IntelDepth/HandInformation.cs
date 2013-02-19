@@ -20,6 +20,5 @@ namespace IntelDepth
             get { return _rightHand; }
             set { _rightHand = value; }
         }
-
     }
 }

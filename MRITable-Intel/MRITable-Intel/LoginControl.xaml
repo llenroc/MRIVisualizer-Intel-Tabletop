@@ -10,7 +10,7 @@
             <RowDefinition Height="5*" />
             <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
-        <Label Foreground="White" FontFamily="Segoe UI" Content="Please enter your gesture password" Height="28" Name="welcomeLabel" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="0" />
+        <Label Foreground="White" FontFamily="Segoe UI" Content="Please give your name and password." Height="46" Name="welcomeLabel" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Visible" Margin="0,105,12,99" Width="288" FontSize="16" />
         <StackPanel x:Name="GesturePerformedPanel" Orientation="Horizontal" Grid.Row="1"/>
         <Grid Grid.Row="2" Name="Password_Grid">
             <Grid.ColumnDefinitions>

@@ -71,5 +71,4 @@ namespace IntelDepth
             _hands = hands;
         }
     }
-
 }

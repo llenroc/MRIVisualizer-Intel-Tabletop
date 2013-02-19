@@ -26,7 +26,6 @@ namespace MRITable_Intel
 
         public event EventHandler<EventArgs> OnLoginCompleteSuccessfully;
 
-
         public LoginControl()
         {
             InitializeComponent();
@@ -82,7 +81,6 @@ namespace MRITable_Intel
             }
         }
 
-
         public void Speak(String stringToSpeak)
         {
             List<String> sentences = stringToSpeak.Split('.').ToList<String>();
@@ -103,8 +101,7 @@ namespace MRITable_Intel
 
         public void SetupLoginControl(IntelCameraPipeline intelCamera)
         {
-            Speak("Please enter your gesture password."); 
-
+            Speak("Welcome Doctor. Please enter your gesture password."); 
             SetupCameraForGestures(intelCamera);
         }
 
@@ -114,7 +111,6 @@ namespace MRITable_Intel
             camera.OnThumbsDownGestureDetected -= Gesture_OnThumbsDownGestureDetected;
             camera.OnThumbsUpGestureDetected -= Gesture_OnThumbsUpGestureDetected;
             camera.OnPeaceSymbolGestureDetected -= Gesture_OnPeaceSymbolGestureDetected;
-
         }
         #region Gesture Methods
         private void SetupCameraForGestures(IntelCameraPipeline camera)
@@ -130,6 +126,7 @@ namespace MRITable_Intel
             Console.WriteLine("{0} Gesture Detected", gesture);
             ApplyGestureToPassword(gesture);
         }
+
         private void Gesture_OnPeaceSymbolGestureDetected(object sender, GestureEventArgs e)
         {
             ProcessGesture("Peace Symbol"); 
@@ -148,7 +145,6 @@ namespace MRITable_Intel
         private void Gesture_FlatHandGestureDetected(object sender, GestureEventArgs e)
         {
             ProcessGesture("Flat Hand"); 
-
         }
 
         #endregion

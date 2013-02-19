@@ -19,7 +19,9 @@ namespace IntelDepth
         public event EventHandler<GestureEventArgs> OnFlatHandGestureDetected;
         public event EventHandler<GestureEventArgs> OnPeaceSymbolGestureDetected;
         public event EventHandler<GestureEventArgs> OnThumbsDownGestureDetected;
-        public event EventHandler<GestureEventArgs> OnThumbsUpGestureDetected; 
+        public event EventHandler<GestureEventArgs> OnThumbsUpGestureDetected;
+
+        public event EventHandler<SpeechEventArgs> OnSpeechDetected; 
 
         const int ErrorCode = -1;
         const short screenLength = 500;
@@ -81,7 +83,8 @@ namespace IntelDepth
         /// </summary>
         /// <param name="data"></param>
         public override void OnRecognized(ref PXCMVoiceRecognition.Recognition data)
-        {
+        {   
+            OnSpeechDetected(this, new SpeechEventArgs(data.dictation));
             //if (data.)
                 //getSpeechEvent(this, new SpeechEventArgs(data.dictation));            //base.OnRecognized(ref data);
         }
@@ -244,7 +247,7 @@ namespace IntelDepth
 
                     double filteredResult = (filteredFrames.Sum() / filteredFrames.Count()) - distanceFromScreenEdge;
 
-                    if (filteredResult < screenLength && filteredResult != -306)
+                    if (filteredResult < screenLength && filteredResult != - distanceFromScreenEdge)
                     {
                         //handler(this, new DepthEventArgs(filteredResult));
                         OnDepthDetected(this, new DepthEventArgs(filteredResult));
