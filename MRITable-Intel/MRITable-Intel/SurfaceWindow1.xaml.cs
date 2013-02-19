@@ -34,28 +34,15 @@ namespace MRITable_Intel
     /// </summary>
     public partial class SurfaceWindow1 : SurfaceWindow
     {
-        const double SIZE_OF_TABLE = 500.0;
-        const int NUM_OF_SLICES = 100;
-
         IntelCameraPipeline intelCamera;
 
         private void SurfaceWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            //Setup networking server
-            InitializeServer();
-
-            //Setup grid for displaying slices 
-            this.ImageHighlighter.SetupGrid(NUM_OF_SLICES);
-
-            //Setup Camera
+            //Setup Camera & Gesture
             intelCamera = new IntelCameraPipeline();
-
-            //Setup gesture related events
             SetupCameraForGestures(intelCamera);
-
-            //Setup depth related events
-            intelCamera.OnDepthDetected += Depth_DepthValueDetected;
             
+            //Start Camera
             intelCamera.Start();
         }
 
@@ -64,140 +51,6 @@ namespace MRITable_Intel
             intelCamera.Stop();
         }
 
-        private void Depth_DepthValueDetected(object sender, DepthEventArgs e)
-        {
-            this.Dispatcher.Invoke(
-                new Action(
-                    delegate()
-                    {
-                        int slice = ComputeSlice(e.Depth);
-
-                        //Update UI of reference body
-                        this.ImageHighlighter.showSlice(slice);
-                        this.label1.Content = String.Format("{0} mm, {1} slice", e.Depth, slice);
-
-                        //Dispatch slice to attached devices
-                        DispatchSlice(slice);
-                    }
-                )
-            );
-        }
-
-        #region Slice Methods
-
-        private void ShowSlice(int slicenumber)
-        {
-            this.ImageHighlighter.showSlice(slicenumber);
-        }
-        private int ComputeSlice(double distance)
-        {
-            double percentageIntoTable = (distance / SIZE_OF_TABLE);
-            int chosenSlice = (int)(percentageIntoTable * NUM_OF_SLICES);
-
-            return chosenSlice;
-        }
-        private void DispatchSlice(int sliceNumber)
-        {
-            Message msg = new Message("ShowSlice");
-            msg.AddField("sliceNumber", sliceNumber);
-            this._server.BroadcastMessage(msg);
-
-        }
-        #endregion
-
-        //TODO This iNetwork stuff should be refactored into a seperate class
-        #region iNetwork stuff
-
-        private Server _server;
-        private List<Connection> _clients;
-
-        public void InitializeServer()
-        {
-            this._clients = new List<Connection>();
-
-            // Create a new server, add name and port number
-            this._server = new Server("MRIViz", 12345);
-            this._server.IsDiscoverable = true;
-            this._server.Connection += new ConnectionEventHandler(OnServerConnection);
-
-            this._server.Start();
-        }
-
-
-        private void OnServerConnection(object sender, ConnectionEventArgs e)
-        {
-
-            if (e.ConnectionEvent == ConnectionEvents.Connect)
-            {
-                // new client connected
-                lock (this._clients)
-                {
-                    if (!(this._clients.Contains(e.Connection)))
-                    {
-                        this._clients.Add(e.Connection);
-                        e.Connection.MessageReceived += new ConnectionMessageEventHandler(OnMessageReceived);
-
-                        this.Dispatcher.Invoke(
-                            new Action(
-                                delegate()
-                                {
-                                    //this.clientList.Items.Add(e.Connection.ToString());
-                                }));
-                    }
-                }
-            }
-            else if (e.ConnectionEvent == ConnectionEvents.Disconnect)
-            {
-                // client disconnected
-                lock (this._clients)
-                {
-                    if (this._clients.Contains(e.Connection))
-                    {
-                        this._clients.Remove(e.Connection);
-                        e.Connection.MessageReceived -= new ConnectionMessageEventHandler(OnMessageReceived);
-
-                        this.Dispatcher.Invoke(
-                            new Action(
-                                delegate()
-                                {
-                                    //this.clientList.Items.Remove(e.Connection.ToString());
-                                }));
-                    }
-                }
-            }
-        }
-
-        private void OnMessageReceived(object sender, Message msg)
-        {
-            this.Dispatcher.Invoke(
-                new Action(
-                    delegate()
-                    {
-                        if (msg != null)
-                        {
-                            //this.messages.Text += msg.Name + "\n";
-                            switch (msg.Name)
-                            {
-                                default:
-                                    Console.Out.WriteLine(msg.Name);
-                                    // don't do anything
-                                    break;
-                                // add cases with the message names
-                            }
-                        }
-                    }));
-        }
-
-        void OnClosing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            //Ensure that the server terminates when the window is closed.
-            if (this._server != null && this._server.IsRunning)
-            {
-                this._server.Stop();
-            }
-        }
-
-        #endregion
 
 
         #region Gesture Setup & Callback Methods

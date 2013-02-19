@@ -5,8 +5,9 @@
     Title="MRITable_Intel"
     xmlns:Controls="clr-namespace:MRITable_Intel"
     Loaded="SurfaceWindow_Loaded" Closed="SurfaceWindow_Closed" >
-    <Grid>
-        <Controls:ImageHighlighter x:Name="ImageHighlighter"/>
+    <Grid x:Name="MainGridView">
+        <Controls:LoginControl />
+        <!--<Controls:ImageHighlighter x:Name="ImageHighlighter"/>-->
         <Label Content="" Height="28" HorizontalAlignment="Left" Margin="12,12,0,0" Name="label1" VerticalAlignment="Top" Foreground="#FFEB3636" />
     </Grid>
 </s:SurfaceWindow>

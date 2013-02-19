@@ -115,6 +115,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="LoginControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="SurfaceWindow1.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -126,6 +130,10 @@
     <Compile Include="ImageHighlighter.xaml.cs">
       <DependentUpon>ImageHighlighter.xaml</DependentUpon>
     </Compile>
+    <Compile Include="LoginControl.xaml.cs">
+      <DependentUpon>LoginControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Network.cs" />
     <Compile Include="SurfaceWindow1.xaml.cs">
       <DependentUpon>SurfaceWindow1.xaml</DependentUpon>
       <SubType>Code</SubType>
