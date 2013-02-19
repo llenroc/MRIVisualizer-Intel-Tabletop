@@ -32,18 +32,24 @@ namespace MRITable_Intel
     /// <summary>
     /// Interaction logic for SurfaceWindow1.xaml
     /// </summary>
-    public partial class SurfaceWindow1 : SurfaceWindow
+    public partial class MainWindow : SurfaceWindow
     {
         IntelCameraPipeline intelCamera;
 
         private void SurfaceWindow_Loaded(object sender, RoutedEventArgs e)
         {
             //Setup Camera & Gesture
-            intelCamera = new IntelCameraPipeline();
-            SetupCameraForGestures(intelCamera);
+            intelCamera = new IntelCameraPipeline(this.Dispatcher); 
             
             //Start Camera
+            //TODO ... gesture detection is not working when depth is not found ... fix this later
+            intelCamera.OnDepthDetected += intelCamera_OnDepthDetected;
             intelCamera.Start();
+        }
+
+        void intelCamera_OnDepthDetected(object sender, DepthEventArgs e)
+        {
+            Console.WriteLine("{0}", e.Depth);
         }
 
         private void SurfaceWindow_Closed(object sender, EventArgs e)
@@ -51,43 +57,26 @@ namespace MRITable_Intel
             intelCamera.Stop();
         }
 
-
-
-        #region Gesture Setup & Callback Methods
-        private void SetupCameraForGestures(IntelCameraPipeline camera)
+        private void LoginControl_Loaded(object sender, RoutedEventArgs e)
         {
-            camera.OnFlatHandGestureDetected += Gesture_FlatHandGestureDetected;
-            camera.OnThumbsDownGestureDetected += Gesture_OnThumbsDownGestureDetected;
-            camera.OnThumbsUpGestureDetected += Gesture_OnThumbsUpGestureDetected;
-            camera.OnPeaceSymbolGestureDetected += Gesture_OnPeaceSymbolGestureDetected;
+            loginControl.SetupLoginControl(intelCamera);
+            loginControl.OnLoginCompleteSuccessfully += loginControl_OnLoginCompleteSuccessfully;
         }
 
-        private void Gesture_OnPeaceSymbolGestureDetected(object sender, GestureEventArgs e)
+        private void loginControl_OnLoginCompleteSuccessfully(object sender, EventArgs e)
         {
-            Console.WriteLine("Peace Symbol Gesture Detected");
+            //Remove login controller & turn off events
+            loginControl.ShutdownLoginController(intelCamera); 
+            MainGridView.Children.Remove(loginControl);
+
+            ImageHighlighter imgHighlighter = new ImageHighlighter();
+            imgHighlighter.SetupImageHighlighter(intelCamera);
+            MainGridView.Children.Add(imgHighlighter);
         }
-
-        private void Gesture_OnThumbsDownGestureDetected(object sender, GestureEventArgs e)
-        {
-            Console.WriteLine("Thumbs Down Gesture Detected");
-        }
-
-        private void Gesture_OnThumbsUpGestureDetected(object sender, GestureEventArgs e)
-        {
-            Console.WriteLine("Thumbs Up Gesture Detected");
-        }
-
-        private void Gesture_FlatHandGestureDetected(object sender, GestureEventArgs e)
-        {
-            Console.WriteLine("Flat Hand Gesture Detected");
-
-        }
-
-        #endregion
 
         #region Generated code
 
-        public SurfaceWindow1()
+        public MainWindow()
         {
             InitializeComponent();
             AddWindowAvailabilityHandlers();
@@ -159,6 +148,8 @@ namespace MRITable_Intel
         }
 
         #endregion
+
+
 
 
 

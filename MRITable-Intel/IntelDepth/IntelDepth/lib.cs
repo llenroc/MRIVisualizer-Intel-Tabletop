@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Windows.Threading; 
+
 using MathNet.Numerics.Statistics;
 using System.ComponentModel;
 
@@ -24,7 +26,12 @@ namespace IntelDepth
         public int numFramesToAverage = 5;
         private short distanceFromScreenEdge = 200; // ~20 cm from the edge
 
-        public IntelCameraPipeline(): base() { }
+        private Dispatcher mainDispatcher; 
+
+        public IntelCameraPipeline(Dispatcher dispatcher): base() 
+        {
+            mainDispatcher = dispatcher; 
+        }
 
         private BackgroundWorker bw; 
 
@@ -87,37 +94,50 @@ namespace IntelDepth
         /// <param name="gesture"></param>
         public override void OnGesture(ref PXCMGesture.Gesture gesture)
         {
-            if (gesture.active)
+            if (!gesture.active)
+                return;
+
+            //We dispatch the event handling to the main thread
+            PXCMGesture.Gesture inputGesture = gesture; //Copy the gesture for some reason ... 
+
+            mainDispatcher.Invoke(
+                new Action(
+                    delegate()
+                    {
+                        ProcessGestureEvents(inputGesture);
+                    }
+                )
+            );
+     
+        }
+
+        private void ProcessGestureEvents(PXCMGesture.Gesture gesture)
+        {
+            switch (gesture.label)
             {
-                switch (gesture.label)
-                {
-                    //Flat Hand
-                    case PXCMGesture.Gesture.Label.LABEL_POSE_BIG5:
-                        if (OnFlatHandGestureDetected != null)
-                            OnFlatHandGestureDetected(this, new GestureEventArgs(gesture));
-                        break;
-                    //Peace Symbol 
-                    case PXCMGesture.Gesture.Label.LABEL_POSE_PEACE:
-                        if (OnPeaceSymbolGestureDetected != null)
-                            OnPeaceSymbolGestureDetected(this, new GestureEventArgs(gesture));
-                        break;
-                    //Thumbs Down
-                    case PXCMGesture.Gesture.Label.LABEL_POSE_THUMB_DOWN:
-                        if (OnThumbsDownGestureDetected != null)
-                            OnThumbsDownGestureDetected(this, new GestureEventArgs(gesture));
-                        break;
-                    //Thumbs Up
-                    case PXCMGesture.Gesture.Label.LABEL_POSE_THUMB_UP:
-                        if (OnThumbsUpGestureDetected != null)
-                            OnThumbsUpGestureDetected(this, new GestureEventArgs(gesture));
-                        break; 
-                    default:
-                        break;
-                }
-
-
+                //Flat Hand
+                case PXCMGesture.Gesture.Label.LABEL_POSE_BIG5:
+                    if (OnFlatHandGestureDetected != null)
+                        OnFlatHandGestureDetected(this, new GestureEventArgs(gesture));
+                    break;
+                //Peace Symbol 
+                case PXCMGesture.Gesture.Label.LABEL_POSE_PEACE:
+                    if (OnPeaceSymbolGestureDetected != null)
+                        OnPeaceSymbolGestureDetected(this, new GestureEventArgs(gesture));
+                    break;
+                //Thumbs Down
+                case PXCMGesture.Gesture.Label.LABEL_POSE_THUMB_DOWN:
+                    if (OnThumbsDownGestureDetected != null)
+                        OnThumbsDownGestureDetected(this, new GestureEventArgs(gesture));
+                    break;
+                //Thumbs Up
+                case PXCMGesture.Gesture.Label.LABEL_POSE_THUMB_UP:
+                    if (OnThumbsUpGestureDetected != null)
+                        OnThumbsUpGestureDetected(this, new GestureEventArgs(gesture));
+                    break;
+                default:
+                    break;
             }
-                
         }
 
         /// <summary>
@@ -226,7 +246,8 @@ namespace IntelDepth
 
                     if (filteredResult < screenLength && filteredResult != -306)
                     {
-                        handler(this, new DepthEventArgs(filteredResult));
+                        //handler(this, new DepthEventArgs(filteredResult));
+                        OnDepthDetected(this, new DepthEventArgs(filteredResult));
                     }
                 }
 

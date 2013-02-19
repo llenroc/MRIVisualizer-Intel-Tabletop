@@ -5,7 +5,26 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <Grid>
-        <Label FontFamily="Segoe UI" Content="Welcome Daddy Cool" Height="28" Name="label1" VerticalAlignment="Center" HorizontalAlignment="Center" />
+    <Grid Background="Black">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="5*" />
+            <RowDefinition Height="1*" />
+        </Grid.RowDefinitions>
+        <Label Foreground="White" FontFamily="Segoe UI" Content="Please enter your gesture password" Height="28" Name="welcomeLabel" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="0" />
+        <StackPanel x:Name="GesturePerformedPanel" Orientation="Horizontal" Grid.Row="1"/>
+        <Grid Grid.Row="2" Name="Password_Grid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/> <!-- Dummy Column used to center -->
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/> <!-- Dummy Column used to center -->
+            </Grid.ColumnDefinitions>
+            <Image Stretch="Uniform"  x:Name="ThumbsUpImage" Source="Images/Thumbs Up.png" Grid.Column="1" Visibility="Hidden"/>
+            <Image Stretch="Uniform" x:Name="ThumbsDownImage" Source="Images/Thumbs Down.png" Grid.Column="2" Visibility="Hidden"/>
+            <Image Stretch="Uniform" x:Name="HandsFiveImage" Source="Images/Flat Hand.png" Grid.Column="3" Visibility="Hidden"/>
+            <Image Stretch="Uniform" x:Name="PeaceImage" Source="Images/Peace Symbol.jpeg" Grid.Column="4" Visibility="Hidden"/>
+        </Grid>
     </Grid>
 </UserControl>
