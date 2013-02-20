@@ -50,7 +50,8 @@ namespace IntelDepth
             //Depth Camera Enabling
             base.EnableImage(PXCMImage.ColorFormat.COLOR_FORMAT_DEPTH);
 
-            ////Voice Recognition Enabling
+
+            //Voice Recognition Enabling
             //base.EnableVoiceRecognition();
 
             ////Gesture Recognition Enabling
@@ -83,7 +84,7 @@ namespace IntelDepth
         /// </summary>
         /// <param name="data"></param>
         public override void OnRecognized(ref PXCMVoiceRecognition.Recognition data)
-        {   
+        {  
             OnSpeechDetected(this, new SpeechEventArgs(data.dictation));
             //if (data.)
                 //getSpeechEvent(this, new SpeechEventArgs(data.dictation));            //base.OnRecognized(ref data);

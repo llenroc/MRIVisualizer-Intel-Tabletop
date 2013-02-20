@@ -26,6 +26,8 @@ namespace MRITable_Intel
 
         public event EventHandler<EventArgs> OnLoginCompleteSuccessfully;
 
+        IntelCameraPipeline intelCamera; 
+
         public LoginControl()
         {
             InitializeComponent();
@@ -101,8 +103,33 @@ namespace MRITable_Intel
 
         public void SetupLoginControl(IntelCameraPipeline intelCamera)
         {
-            Speak("Welcome Doctor. Please enter your gesture password."); 
+            //Capture intel camera 
+            this.intelCamera = intelCamera;
+
+            intelCamera.EnableVoiceRecognition(); 
+
+            intelCamera.OnSpeechDetected += intelCamera_OnSpeechDetected;
+
+            Speak("Welcome to MRI Visualization. Please say your name.");
+
+        }
+
+        void intelCamera_OnSpeechDetected(object sender, SpeechEventArgs e)
+        {
+
+            intelCamera.PauseVoiceRecognition(true);
+
             SetupCameraForGestures(intelCamera);
+
+            //Announce that login is completely succesfully 
+            Speak("Welcome Doctor Fish. Please enter your gesture password.");
+
+            this.Dispatcher.Invoke(new Action(
+                delegate()
+                {
+                    welcomeLabel.Content = "Welcome Doctor Fish. Please enter your gesture password.";
+                }
+            )); 
         }
 
         public void ShutdownLoginController(IntelCameraPipeline camera)

@@ -11,7 +11,7 @@
             <RowDefinition Height="2*" />
             <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
-        <Label Foreground="White" FontFamily="Segoe UI" Content="Please give your name and password." Name="welcomeLabel" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Visible"  FontSize="60" />
+        <Label Foreground="White" FontFamily="Segoe UI" Content="Welcome to MRI Visualization. Please say your name." Name="welcomeLabel" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Visible"  FontSize="60" />
         <Grid Grid.Row="1" Name="Password_Grid">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*"/> <!-- Dummy Column used to center -->

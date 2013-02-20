@@ -44,24 +44,10 @@ namespace MRITable_Intel
             //Start Camera
             //TODO ... gesture detection is not working when depth is not found ... fix this later
             intelCamera.OnDepthDetected += intelCamera_OnDepthDetected;
+
             intelCamera.Start();
         }
        
-        public void intelCamera_SpeechDetected(object sender, SpeechEventArgs e)
-        {
-            Console.WriteLine(e.Sentence);
-            string nameUpperCase = e.Sentence.ToUpper();
-            if (nameUpperCase.Contains("FISH"))
-            {
-                intelCamera.PauseVoiceRecognition(true);
-                loginControl.SetupLoginControl(intelCamera);
-                loginControl.OnLoginCompleteSuccessfully += loginControl_OnLoginCompleteSuccessfully;
-            }
-            else
-            {
-               loginControl.Speak("Name incorrect");
-            }
-        }
 
         void intelCamera_OnDepthDetected(object sender, DepthEventArgs e)
         {
@@ -75,9 +61,8 @@ namespace MRITable_Intel
 
         private void LoginControl_Loaded(object sender, RoutedEventArgs e)
         {
-            intelCamera.EnableVoiceRecognition();
-            loginControl.Speak("Please say your name.");
-            intelCamera.OnSpeechDetected += intelCamera_SpeechDetected;
+            loginControl.SetupLoginControl(intelCamera);
+            loginControl.OnLoginCompleteSuccessfully += loginControl_OnLoginCompleteSuccessfully;
         }
 
         private void loginControl_OnLoginCompleteSuccessfully(object sender, EventArgs e)
