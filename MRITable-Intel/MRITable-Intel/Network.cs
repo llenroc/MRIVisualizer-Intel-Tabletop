@@ -116,8 +116,8 @@ namespace MRITable_Intel
         public void DispatchSlice(int sliceNumber)
         {
             Message msg = new Message("ShowSlice");
-            msg.AddField("sliceNumber", sliceNumber);
             this.server.BroadcastMessage(msg);
+            msg.AddField("sliceNumber", sliceNumber);
         }
 
         private void DrawCurrentDrawing(Connection clientNew)

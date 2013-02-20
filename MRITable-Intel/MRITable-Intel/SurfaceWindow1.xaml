@@ -4,7 +4,7 @@
     xmlns:s="http://schemas.microsoft.com/surface/2008"
     Title="MRITable_Intel"
     xmlns:Controls="clr-namespace:MRITable_Intel"             
-    Loaded="SurfaceWindow_Loaded" Closed="SurfaceWindow_Closed" WindowStyle="None" WindowState="Normal"  >
+    Loaded="SurfaceWindow_Loaded" Closed="SurfaceWindow_Closed" WindowStyle="None" WindowState="Maximized">
     <Grid x:Name="MainGridView">
         <Controls:LoginControl Loaded="LoginControl_Loaded" x:Name="loginControl"/>
         <!--<Controls:ImageHighlighter x:Name="ImageHighlighter"/>-->
