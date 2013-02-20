@@ -16,7 +16,7 @@ namespace MRITable_Intel
         private List<Connection> clients;
         public event EventHandler<EventArgs> OnPauseScanningEventRecieved;
         public event EventHandler<EventArgs> OnContinueScanningEventRecieved;
-
+        private List<Message> _clientDrawingPaths;
 
 
         public void StartServer()
@@ -26,7 +26,7 @@ namespace MRITable_Intel
             this.server = new Server("MRIViz", 12345);
             this.server.IsDiscoverable = true;
             this.server.Connection += new ConnectionEventHandler(OnServerConnection);
-
+            _clientDrawingPaths = new List<Message>();
             this.server.Start();
         }
 
@@ -48,6 +48,21 @@ namespace MRITable_Intel
                 // Check message name...
                 switch (msg.Name)
                 {
+                    case "StartDrawing":
+                        Console.Out.WriteLine("Starting to Draw");
+                        this._clientDrawingPaths.Add(msg);
+                        this.server.BroadcastMessage(msg);
+                        break;
+                    case "ContinueDrawing":
+                        Console.Out.WriteLine("Continuing to Draw");
+                        this._clientDrawingPaths.Add(msg);
+                        this.server.BroadcastMessage(msg);
+                        break;
+                    case "ClearDrawing":
+                        Console.Out.WriteLine("Clearing the Drawing");
+                        this.server.BroadcastMessage(msg);
+                        this._clientDrawingPaths.Clear();
+                        break;
                     case "PauseScan":
                         Console.Out.WriteLine("Scanning Paused");
                         this.server.BroadcastMessage(msg);
@@ -78,6 +93,7 @@ namespace MRITable_Intel
                         // Add to list and create event listener
                         this.clients.Add(e.Connection);
                         e.Connection.MessageReceived += new ConnectionMessageEventHandler(OnConnectionMessage);
+                        DrawCurrentDrawing(e.Connection);                    
                     }
                 }
             }
@@ -104,7 +120,17 @@ namespace MRITable_Intel
             this.server.BroadcastMessage(msg);
         }
 
-
+        private void DrawCurrentDrawing(Connection clientNew)
+        {
+            foreach (Message redrawMessage in _clientDrawingPaths)
+            {
+                foreach (Connection clientConnection in clients)
+                {
+                    if (clientConnection != clientNew)
+                        this.server.BroadcastMessage(redrawMessage, clientConnection);
+                }
+            }
+        }
 
     }
 }
